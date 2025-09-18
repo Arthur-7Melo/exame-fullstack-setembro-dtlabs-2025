@@ -4,10 +4,16 @@ import (
 	"errors"
 
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/models"
-	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/repository"
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/utils"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+type userRepository interface {
+	FindByEmail(email string) (*models.User, error)
+	Create(user *models.User) error
+	FindByID(id uuid.UUID) (*models.User, error)
+}
 
 type AuthService interface {
 	Login(email, password string) (string, error)
@@ -15,11 +21,11 @@ type AuthService interface {
 }
 
 type authService struct {
-	userRepo repository.UserRepository
+	userRepo userRepository  // Use a interface local
 	jwtService JWTService
 }
 
-func NewAuthService(userRepo repository.UserRepository, jwtService JWTService) AuthService {
+func NewAuthService(userRepo userRepository, jwtService JWTService) AuthService {
 	return &authService{
 		userRepo: userRepo,
 		jwtService: jwtService,

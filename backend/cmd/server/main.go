@@ -41,7 +41,7 @@ func main() {
 
 	jwtService := services.NewJWTService(jwtSecret)
 	userRepo := repository.NewUserRepository(db)
-	authService := services.NewAuthService(*userRepo, jwtService)
+	authService := services.NewAuthService(userRepo, jwtService)
 
 	router := gin.Default()
 
