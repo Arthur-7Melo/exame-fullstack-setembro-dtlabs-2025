@@ -4,6 +4,10 @@ import (
 	"os"
 
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/database"
+	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/handlers"
+	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/repository"
+	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/routers"
+	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/services"
 	logger "github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/utils/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -35,11 +39,22 @@ func main() {
 		logger.Logger.Warn("Warning: JWT_SECRET not set, using fallback key")
 	}
 
-	r := gin.Default()
-	r.GET("/health", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{
-			"message": "Api working :)",
-		})
-	})
-	r.Run(":8080")
+	jwtService := services.NewJWTService(jwtSecret)
+	userRepo := repository.NewUserRepository(db)
+	authService := services.NewAuthService(*userRepo, jwtService)
+
+	router := gin.Default()
+
+	authHandler := handlers.NewAuthHandler(authService)
+	routers.SetupAuthRouter(router, authHandler, jwtService)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	
+	if err := router.Run(":" + port); err != nil {
+		logger.Logger.Error("Failed to start server", "error", err.Error())
+		os.Exit(1)
+	}
 }
