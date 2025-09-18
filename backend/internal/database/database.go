@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/models"
 	logger "github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/utils/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -63,8 +64,8 @@ func NewPostgresConnection(config *DBConfig) (*gorm.DB, error) {
 	return db, nil
 }
 
-func AutoMigrate(db *gorm.DB, models ...interface{}) error {
-	if err := db.AutoMigrate(models...); err != nil {
+func AutoMigrate(db *gorm.DB) error {
+	if err := db.AutoMigrate(&models.User{},); err != nil {
 		return fmt.Errorf("failed to auto migrate: %w", err)
 	}
 	return nil

@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -17,7 +19,13 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 	var user models.User
 	err := r.db.Where("email = ?", email).First(&user).Error
-	return &user, err
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, gorm.ErrRecordNotFound
+		}
+		return nil, err
+	}
+	return &user, nil
 }
 
 func (r *UserRepository) Create(user *models.User) error {
