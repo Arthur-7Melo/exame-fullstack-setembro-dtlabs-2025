@@ -1,0 +1,288 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "API for DT Labs Fullstack Exam - Device Management System",
+        "title": "DT Labs Exam API",
+        "contact": {},
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api",
+    "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "Authenticate user and return JWT token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "User login",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns JWT token",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.TokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid credentials",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/signup": {
+            "post": {
+                "description": "Register a new user and return JWT token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "User registration",
+                "parameters": [
+                    {
+                        "description": "User registration information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.SignupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Returns JWT token",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.TokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid email format or password too short",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "User already exists",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ConflictErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse": {
+            "description": "Example for a 400 Invalid Input response",
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "BAD_REQUEST"
+                },
+                "details": {
+                    "type": "string",
+                    "example": "Please check your input and try again"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "invalid email format"
+                }
+            }
+        },
+        "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ConflictErrorResponse": {
+            "description": "Example for a 409 User Already Exists response",
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "CONFLICT"
+                },
+                "details": {
+                    "type": "string",
+                    "example": "Please check your input and try again"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "user already exists"
+                }
+            }
+        },
+        "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse": {
+            "description": "Resposta de erro detalhada com código, mensagem e detalhes adicionais",
+            "type": "object",
+            "properties": {
+                "code": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ErrorCode"
+                        }
+                    ],
+                    "example": "VALIDATION_FAILED"
+                },
+                "details": {
+                    "type": "string",
+                    "example": "The provided email address is not valid"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Invalid email format"
+                }
+            }
+        },
+        "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ErrorCode": {
+            "type": "string",
+            "enum": [
+                "INVALID_REQUEST",
+                "INVALID_CREDENTIALS",
+                "VALIDATION_FAILED",
+                "USER_ALREADY_EXISTS",
+                "DATABASE_ERROR",
+                "INTERNAL_ERROR",
+                "USER_NOT_FOUND",
+                "TOKEN_INVALID",
+                "TOKEN_EXPIRED",
+                "INVALID_SIGNING_METHOD"
+            ],
+            "x-enum-varnames": [
+                "ErrorCodeInvalidRequest",
+                "ErrorCodeInvalidCredentials",
+                "ErrorCodeValidationFailed",
+                "ErrorCodeUserExists",
+                "ErrorCodeDatabaseError",
+                "ErrorCodeInternalError",
+                "ErrorCodeUserNotFound",
+                "ErrorCodeTokenInvalid",
+                "ErrorCodeTokenExpired",
+                "ErrorCodeInvalidSigningMethod"
+            ]
+        },
+        "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse": {
+            "description": "Example for a 403 Invalid Credentials response",
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "FORBIDDEN"
+                },
+                "details": {
+                    "type": "string",
+                    "example": "Please check your credentials and try again"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Invalid credentials"
+                }
+            }
+        },
+        "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse": {
+            "description": "Example for a 500 Internal Server Error response",
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "INTERNAL_SERVER_ERROR"
+                },
+                "details": {
+                    "type": "string",
+                    "example": "failed to create user"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Internal server error"
+                }
+            }
+        },
+        "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.LoginRequest": {
+            "description": "Login credentials for user authentication",
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "securePassword123"
+                }
+            }
+        },
+        "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.SignupRequest": {
+            "description": "User registration information",
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "securePassword123"
+                }
+            }
+        },
+        "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.TokenResponse": {
+            "description": "JWT token returned upon successful authentication",
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer\" followed by a space and JWT token",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

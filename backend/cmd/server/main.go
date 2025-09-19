@@ -11,14 +11,32 @@ import (
 	logger "github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/utils/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+
+	_ "github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title DT Labs Exam API
+// @version 1.0
+// @description API for DT Labs Fullstack Exam - Device Management System
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8080
+// @BasePath /api
+// @schemes http https
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token
 func main() {
 	if err := godotenv.Load(); err != nil {
 		logger.Logger.Warn(".env file not found", "warn", err.Error())
 	}
 
-	// Initialize database connection
 	dbConfig := database.NewDBConfig()
 	db, err := database.NewPostgresConnection(dbConfig)
 	if err != nil {
@@ -26,13 +44,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Run migrations
 	if err := database.AutoMigrate(db); err != nil {
 		logger.Logger.Error("failed to auto migrate", "error", err.Error())
 		os.Exit(1)
 	}
 
-	// Initialize services
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		jwtSecret = "62774aa06a16f84f7acefe1c0be66aca07b665743eb459f90db56afd4deace4b" 
@@ -44,6 +60,9 @@ func main() {
 	authService := services.NewAuthService(userRepo, jwtService)
 
 	router := gin.Default()
+
+	url := ginSwagger.URL("/swagger/doc.json") 
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	authHandler := handlers.NewAuthHandler(authService)
 	routers.SetupAuthRouter(router, authHandler, jwtService)
