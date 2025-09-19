@@ -79,7 +79,7 @@ func TestAuthService_Login(t *testing.T) {
 		token, err := authService.Login("test@email.com", "password")
 
 		assert.Empty(t, token)
-		assert.EqualError(t, err, "failed to fetch user")
+		assert.EqualError(t, err, "failed to check user existence")
 		userRepo.AssertExpectations(t)
 	})
 

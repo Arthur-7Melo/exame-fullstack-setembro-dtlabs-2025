@@ -3,12 +3,13 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/dto"
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/models"
+	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/utils/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -52,10 +53,10 @@ func TestAuthHandler_Login(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		
-		var response map[string]string
+		var response dto.TokenResponse
 		json.Unmarshal(w.Body.Bytes(), &response)
 		
-		assert.Equal(t, "jwt-token-123", response["token"])
+		assert.Equal(t, "jwt-token-123", response.Token)
 		mockAuthService.AssertExpectations(t)
 	})
 
@@ -72,17 +73,17 @@ func TestAuthHandler_Login(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 		
-		var response map[string]string
+		var response dto.DetailedErrorResponse
 		json.Unmarshal(w.Body.Bytes(), &response)
 		
-		assert.Equal(t, "Invalid request body", response["error"])
+		assert.Equal(t, "Invalid request body", response.Message)
 	})
 
 	t.Run("Invalid credentials", func(t *testing.T) {
 		mockAuthService := new(MockAuthService)
 		handler := NewAuthHandler(mockAuthService)
 
-		mockAuthService.On("Login", "test@example.com", "wrongpassword").Return("", errors.New("invalid credentials"))
+		mockAuthService.On("Login", "test@example.com", "wrongpassword").Return("", errors.ErrInvalidCredentials)
 
 		loginData := map[string]string{
 			"email":    "test@example.com",
@@ -99,10 +100,10 @@ func TestAuthHandler_Login(t *testing.T) {
 
 		assert.Equal(t, http.StatusForbidden, w.Code)
 		
-		var response map[string]string
+		var response dto.DetailedErrorResponse
 		json.Unmarshal(w.Body.Bytes(), &response)
 		
-		assert.Equal(t, "Invalid credentials", response["error"])
+		assert.Equal(t, "invalid credentials", response.Message)
 		mockAuthService.AssertExpectations(t)
 	})
 
@@ -110,7 +111,7 @@ func TestAuthHandler_Login(t *testing.T) {
 		mockAuthService := new(MockAuthService)
 		handler := NewAuthHandler(mockAuthService)
 
-		mockAuthService.On("Login", "nonexistent@example.com", "password123").Return("", errors.New("user not found"))
+		mockAuthService.On("Login", "nonexistent@example.com", "password123").Return("", errors.ErrUserNotFound)
 
 		loginData := map[string]string{
 			"email":    "nonexistent@example.com",
@@ -127,10 +128,10 @@ func TestAuthHandler_Login(t *testing.T) {
 
 		assert.Equal(t, http.StatusForbidden, w.Code)
 		
-		var response map[string]string
+		var response dto.DetailedErrorResponse
 		json.Unmarshal(w.Body.Bytes(), &response)
 		
-		assert.Equal(t, "Invalid credentials", response["error"])
+		assert.Equal(t, "user not found", response.Message)
 		mockAuthService.AssertExpectations(t)
 	})
 }
@@ -142,14 +143,18 @@ func TestAuthHandler_Signup(t *testing.T) {
 		mockAuthService := new(MockAuthService)
 		handler := NewAuthHandler(mockAuthService)
 
-		user := &models.User{
+		expectedUser := &models.User{
 			Email:    "newuser@example.com",
 			Password: "securePassword123",
 		}
 
-		mockAuthService.On("Signup", user).Return("jwt-token-456", nil)
+		mockAuthService.On("Signup", expectedUser).Return("jwt-token-456", nil)
 
-		jsonData, _ := json.Marshal(user)
+		signupData := map[string]string{
+			"email":    "newuser@example.com",
+			"password": "securePassword123",
+		}
+		jsonData, _ := json.Marshal(signupData)
 
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
@@ -160,10 +165,10 @@ func TestAuthHandler_Signup(t *testing.T) {
 
 		assert.Equal(t, http.StatusCreated, w.Code)
 		
-		var response map[string]string
+		var response dto.TokenResponse
 		json.Unmarshal(w.Body.Bytes(), &response)
 		
-		assert.Equal(t, "jwt-token-456", response["token"])
+		assert.Equal(t, "jwt-token-456", response.Token)
 		mockAuthService.AssertExpectations(t)
 	})
 
@@ -180,24 +185,28 @@ func TestAuthHandler_Signup(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 		
-		var response map[string]string
+		var response dto.DetailedErrorResponse
 		json.Unmarshal(w.Body.Bytes(), &response)
 		
-		assert.Equal(t, "Invalid request body", response["error"])
+		assert.Equal(t, "Invalid request body", response.Message)
 	})
 
 	t.Run("User already exists", func(t *testing.T) {
 		mockAuthService := new(MockAuthService)
 		handler := NewAuthHandler(mockAuthService)
 
-		user := &models.User{
+		expectedUser := &models.User{
 			Email:    "existing@example.com",
 			Password: "password123",
 		}
 
-		mockAuthService.On("Signup", user).Return("", errors.New("user already exists"))
+		mockAuthService.On("Signup", expectedUser).Return("", errors.ErrUserAlreadyExists)
 
-		jsonData, _ := json.Marshal(user)
+		signupData := map[string]string{
+			"email":    "existing@example.com",
+			"password": "password123",
+		}
+		jsonData, _ := json.Marshal(signupData)
 
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
@@ -208,10 +217,10 @@ func TestAuthHandler_Signup(t *testing.T) {
 
 		assert.Equal(t, http.StatusConflict, w.Code)
 		
-		var response map[string]string
+		var response dto.DetailedErrorResponse
 		json.Unmarshal(w.Body.Bytes(), &response)
 		
-		assert.Equal(t, "user already exists", response["error"])
+		assert.Equal(t, "user already exists", response.Message)
 		mockAuthService.AssertExpectations(t)
 	})
 
@@ -219,14 +228,18 @@ func TestAuthHandler_Signup(t *testing.T) {
 		mockAuthService := new(MockAuthService)
 		handler := NewAuthHandler(mockAuthService)
 
-		user := &models.User{
+		expectedUser := &models.User{
 			Email:    "invalid-email",
 			Password: "password123",
 		}
 
-		mockAuthService.On("Signup", user).Return("", errors.New("invalid email format"))
+		mockAuthService.On("Signup", expectedUser).Return("", errors.ErrInvalidEmail)
 
-		jsonData, _ := json.Marshal(user)
+		signupData := map[string]string{
+			"email":    "invalid-email",
+			"password": "password123",
+		}
+		jsonData, _ := json.Marshal(signupData)
 
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
@@ -237,10 +250,10 @@ func TestAuthHandler_Signup(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 		
-		var response map[string]string
+		var response dto.DetailedErrorResponse
 		json.Unmarshal(w.Body.Bytes(), &response)
 		
-		assert.Equal(t, "invalid email format", response["error"])
+		assert.Equal(t, "invalid email format", response.Message)
 		mockAuthService.AssertExpectations(t)
 	})
 
@@ -248,14 +261,18 @@ func TestAuthHandler_Signup(t *testing.T) {
 		mockAuthService := new(MockAuthService)
 		handler := NewAuthHandler(mockAuthService)
 
-		user := &models.User{
+		expectedUser := &models.User{
 			Email:    "test@example.com",
 			Password: "short",
 		}
 
-		mockAuthService.On("Signup", user).Return("", errors.New("password must be at least 8 characters"))
+		mockAuthService.On("Signup", expectedUser).Return("", errors.ErrWeakPassword)
 
-		jsonData, _ := json.Marshal(user)
+		signupData := map[string]string{
+			"email":    "test@example.com",
+			"password": "short",
+		}
+		jsonData, _ := json.Marshal(signupData)
 
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
@@ -266,10 +283,10 @@ func TestAuthHandler_Signup(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 		
-		var response map[string]string
+		var response dto.DetailedErrorResponse
 		json.Unmarshal(w.Body.Bytes(), &response)
 		
-		assert.Equal(t, "password must be at least 8 characters", response["error"])
+		assert.Equal(t, "password must be at least 8 characters", response.Message)
 		mockAuthService.AssertExpectations(t)
 	})
 
@@ -277,14 +294,18 @@ func TestAuthHandler_Signup(t *testing.T) {
 		mockAuthService := new(MockAuthService)
 		handler := NewAuthHandler(mockAuthService)
 
-		user := &models.User{
+		expectedUser := &models.User{
 			Email:    "test@example.com",
 			Password: "validPassword123",
 		}
 
-		mockAuthService.On("Signup", user).Return("", errors.New("failed to create user"))
+		mockAuthService.On("Signup", expectedUser).Return("", errors.ErrFailedToCreateUser)
 
-		jsonData, _ := json.Marshal(user)
+		signupData := map[string]string{
+			"email":    "test@example.com",
+			"password": "validPassword123",
+		}
+		jsonData, _ := json.Marshal(signupData)
 
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
@@ -295,10 +316,10 @@ func TestAuthHandler_Signup(t *testing.T) {
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		
-		var response map[string]string
+		var response dto.DetailedErrorResponse
 		json.Unmarshal(w.Body.Bytes(), &response)
 		
-		assert.Equal(t, "failed to create user", response["error"])
+		assert.Equal(t, "failed to create user", response.Message)
 		mockAuthService.AssertExpectations(t)
 	})
 
@@ -306,14 +327,18 @@ func TestAuthHandler_Signup(t *testing.T) {
 		mockAuthService := new(MockAuthService)
 		handler := NewAuthHandler(mockAuthService)
 
-		user := &models.User{
+		expectedUser := &models.User{
 			Email:    "test@example.com",
 			Password: "validPassword123",
 		}
 
-		mockAuthService.On("Signup", user).Return("", errors.New("failed to check user existence"))
+		mockAuthService.On("Signup", expectedUser).Return("", errors.ErrFailedToCheckUser)
 
-		jsonData, _ := json.Marshal(user)
+		signupData := map[string]string{
+			"email":    "test@example.com",
+			"password": "validPassword123",
+		}
+		jsonData, _ := json.Marshal(signupData)
 
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
@@ -324,10 +349,10 @@ func TestAuthHandler_Signup(t *testing.T) {
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		
-		var response map[string]string
+		var response dto.DetailedErrorResponse
 		json.Unmarshal(w.Body.Bytes(), &response)
 		
-		assert.Equal(t, "failed to check user existence", response["error"])
+		assert.Equal(t, "failed to check user existence", response.Message)
 		mockAuthService.AssertExpectations(t)
 	})
 }
