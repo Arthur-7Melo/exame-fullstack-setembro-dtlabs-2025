@@ -56,16 +56,26 @@ func main() {
 	}
 
 	jwtService := services.NewJWTService(jwtSecret)
+	
+	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
+	deviceRepo := repository.NewDeviceRepository(db)
+	
+	// Initialize services
 	authService := services.NewAuthService(userRepo, jwtService)
+	deviceService := services.NewDeviceService(deviceRepo)
+	
+	// Initialize handlers
+	authHandler := handlers.NewAuthHandler(authService)
+	deviceHandler := handlers.NewDeviceHandler(deviceService)
 
 	router := gin.Default()
 
 	url := ginSwagger.URL("/swagger/doc.json") 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
-	authHandler := handlers.NewAuthHandler(authService)
 	routers.SetupAuthRouter(router, authHandler, jwtService)
+		routers.SetupDeviceRoutes(router, deviceHandler, jwtService)
 
 	port := os.Getenv("PORT")
 	if port == "" {
