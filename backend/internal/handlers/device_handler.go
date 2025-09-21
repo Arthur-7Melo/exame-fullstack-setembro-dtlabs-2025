@@ -18,6 +18,17 @@ func NewDeviceHandler(deviceService services.DeviceService) *DeviceHandler {
 	return &DeviceHandler{deviceService: deviceService}
 }
 
+// ListDevices godoc
+// @Summary List user devices
+// @Description Get all devices for the authenticated user
+// @Tags devices
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} dto.DeviceResponse "List of devices"
+// @Failure 401 {object} dto.DetailedErrorResponse "Unauthorized"
+// @Failure 500 {object} dto.InternalServerErrorResponse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /v1/devices [get]
 func (h *DeviceHandler) ListDevices(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -60,6 +71,20 @@ func (h *DeviceHandler) ListDevices(c *gin.Context) {
 	c.JSON(http.StatusOK, devices)
 }
 
+// CreateDevice godoc
+// @Summary Create a new device
+// @Description Create a new device for the authenticated user
+// @Tags devices
+// @Accept  json
+// @Produce  json
+// @Param request body dto.CreateDeviceRequest true "Device information"
+// @Success 201 {object} dto.DeviceResponse "Created device"
+// @Failure 400 {object} dto.BadRequestErrorResponse "Invalid request body"
+// @Failure 401 {object} dto.DetailedErrorResponse "Unauthorized"
+// @Failure 409 {object} dto.ConflictErrorResponse "Device already exists"
+// @Failure 500 {object} dto.InternalServerErrorResponse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /v1/devices [post]
 func (h *DeviceHandler) CreateDevice(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -112,6 +137,21 @@ func (h *DeviceHandler) CreateDevice(c *gin.Context) {
 	c.JSON(http.StatusCreated, device)
 }
 
+// GetDevice godoc
+// @Summary Get a device
+// @Description Get a specific device by ID
+// @Tags devices
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Device ID"
+// @Success 200 {object} dto.DeviceResponse "Device details"
+// @Failure 400 {object} dto.BadRequestErrorResponse "Invalid device ID"
+// @Failure 401 {object} dto.DetailedErrorResponse "Unauthorized"
+// @Failure 403 {object} dto.ForbiddenErrorResponse "Forbidden"
+// @Failure 404 {object} dto.DetailedErrorResponse "Device not found"
+// @Failure 500 {object} dto.InternalServerErrorResponse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /v1/devices/{id} [get]
 func (h *DeviceHandler) GetDevice(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -164,6 +204,22 @@ func (h *DeviceHandler) GetDevice(c *gin.Context) {
 	c.JSON(http.StatusOK, device)
 }
 
+// UpdateDevice godoc
+// @Summary Update a device
+// @Description Update a specific device by ID
+// @Tags devices
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Device ID"
+// @Param request body dto.UpdateDeviceRequest true "Device information"
+// @Success 200 {object} dto.DeviceResponse "Updated device"
+// @Failure 400 {object} dto.BadRequestErrorResponse "Invalid request body or device ID"
+// @Failure 401 {object} dto.DetailedErrorResponse "Unauthorized"
+// @Failure 403 {object} dto.ForbiddenErrorResponse "Forbidden"
+// @Failure 404 {object} dto.DetailedErrorResponse "Device not found"
+// @Failure 500 {object} dto.InternalServerErrorResponse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /v1/devices/{id} [put]
 func (h *DeviceHandler) UpdateDevice(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -226,6 +282,21 @@ func (h *DeviceHandler) UpdateDevice(c *gin.Context) {
 	c.JSON(http.StatusOK, device)
 }
 
+// DeleteDevice godoc
+// @Summary Delete a device
+// @Description Delete a specific device by ID
+// @Tags devices
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Device ID"
+// @Success 204 "No content"
+// @Failure 400 {object} dto.BadRequestErrorResponse "Invalid device ID"
+// @Failure 401 {object} dto.DetailedErrorResponse "Unauthorized"
+// @Failure 403 {object} dto.ForbiddenErrorResponse "Forbidden"
+// @Failure 404 {object} dto.DetailedErrorResponse "Device not found"
+// @Failure 500 {object} dto.InternalServerErrorResponse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /v1/devices/{id} [delete]
 func (h *DeviceHandler) DeleteDevice(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {

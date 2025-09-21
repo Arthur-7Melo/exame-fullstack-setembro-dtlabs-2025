@@ -26,8 +26,20 @@ definitions:
         example: user already exists
         type: string
     type: object
+  github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.CreateDeviceRequest:
+    description: Create device request
+    properties:
+      description:
+        type: string
+      location:
+        type: string
+      name:
+        type: string
+      sn:
+        type: string
+    type: object
   github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse:
-    description: Resposta de erro detalhada com código, mensagem e detalhes adicionais
+    description: Detailed error response with code, message and additional details
     properties:
       code:
         allOf:
@@ -38,6 +50,26 @@ definitions:
         type: string
       message:
         example: Invalid email format
+        type: string
+    type: object
+  github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DeviceResponse:
+    description: Device response
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      location:
+        type: string
+      name:
+        type: string
+      sn:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      uuid:
         type: string
     type: object
   github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ErrorCode:
@@ -52,6 +84,9 @@ definitions:
     - TOKEN_INVALID
     - TOKEN_EXPIRED
     - INVALID_SIGNING_METHOD
+    - DEVICE_NOT_FOUND
+    - DEVICE_ALREADY_EXISTS
+    - FORBIDDEN
     type: string
     x-enum-varnames:
     - ErrorCodeInvalidRequest
@@ -64,6 +99,9 @@ definitions:
     - ErrorCodeTokenInvalid
     - ErrorCodeTokenExpired
     - ErrorCodeInvalidSigningMethod
+    - ErrorCodeDeviceNotFound
+    - ErrorCodeDeviceAlreadyExists
+    - ErrorCodeForbidden
   github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse:
     description: Example for a 403 Invalid Credentials response
     properties:
@@ -115,6 +153,16 @@ definitions:
     properties:
       token:
         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+        type: string
+    type: object
+  github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.UpdateDeviceRequest:
+    description: Update device request
+    properties:
+      description:
+        type: string
+      location:
+        type: string
+      name:
         type: string
     type: object
 host: localhost:8080
@@ -191,6 +239,203 @@ paths:
       summary: User registration
       tags:
       - authentication
+  /v1/devices:
+    get:
+      consumes:
+      - application/json
+      description: Get all devices for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of devices
+          schema:
+            items:
+              $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DeviceResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List user devices
+      tags:
+      - devices
+    post:
+      consumes:
+      - application/json
+      description: Create a new device for the authenticated user
+      parameters:
+      - description: Device information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.CreateDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created device
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DeviceResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse'
+        "409":
+          description: Device already exists
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ConflictErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new device
+      tags:
+      - devices
+  /v1/devices/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a specific device by ID
+      parameters:
+      - description: Device ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Invalid device ID
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse'
+        "404":
+          description: Device not found
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a device
+      tags:
+      - devices
+    get:
+      consumes:
+      - application/json
+      description: Get a specific device by ID
+      parameters:
+      - description: Device ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Device details
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DeviceResponse'
+        "400":
+          description: Invalid device ID
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse'
+        "404":
+          description: Device not found
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a device
+      tags:
+      - devices
+    put:
+      consumes:
+      - application/json
+      description: Update a specific device by ID
+      parameters:
+      - description: Device ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Device information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.UpdateDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated device
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DeviceResponse'
+        "400":
+          description: Invalid request body or device ID
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse'
+        "404":
+          description: Device not found
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a device
+      tags:
+      - devices
 schemes:
 - http
 - https

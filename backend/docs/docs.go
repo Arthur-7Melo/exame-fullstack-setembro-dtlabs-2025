@@ -116,6 +116,313 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/v1/devices": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all devices for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "devices"
+                ],
+                "summary": "List user devices",
+                "responses": {
+                    "200": {
+                        "description": "List of devices",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DeviceResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new device for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "devices"
+                ],
+                "summary": "Create a new device",
+                "parameters": [
+                    {
+                        "description": "Device information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.CreateDeviceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created device",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DeviceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Device already exists",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ConflictErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/devices/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a specific device by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "devices"
+                ],
+                "summary": "Get a device",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Device details",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DeviceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid device ID",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Device not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update a specific device by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "devices"
+                ],
+                "summary": "Update a device",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Device information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.UpdateDeviceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated device",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DeviceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or device ID",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Device not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete a specific device by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "devices"
+                ],
+                "summary": "Delete a device",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "400": {
+                        "description": "Invalid device ID",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Device not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -155,8 +462,26 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.CreateDeviceRequest": {
+            "description": "Create device request",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sn": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse": {
-            "description": "Resposta de erro detalhada com código, mensagem e detalhes adicionais",
+            "description": "Detailed error response with code, message and additional details",
             "type": "object",
             "properties": {
                 "code": {
@@ -177,6 +502,36 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DeviceResponse": {
+            "description": "Device response",
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sn": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ErrorCode": {
             "type": "string",
             "enum": [
@@ -189,7 +544,10 @@ const docTemplate = `{
                 "USER_NOT_FOUND",
                 "TOKEN_INVALID",
                 "TOKEN_EXPIRED",
-                "INVALID_SIGNING_METHOD"
+                "INVALID_SIGNING_METHOD",
+                "DEVICE_NOT_FOUND",
+                "DEVICE_ALREADY_EXISTS",
+                "FORBIDDEN"
             ],
             "x-enum-varnames": [
                 "ErrorCodeInvalidRequest",
@@ -201,7 +559,10 @@ const docTemplate = `{
                 "ErrorCodeUserNotFound",
                 "ErrorCodeTokenInvalid",
                 "ErrorCodeTokenExpired",
-                "ErrorCodeInvalidSigningMethod"
+                "ErrorCodeInvalidSigningMethod",
+                "ErrorCodeDeviceNotFound",
+                "ErrorCodeDeviceAlreadyExists",
+                "ErrorCodeForbidden"
             ]
         },
         "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse": {
@@ -275,6 +636,21 @@ const docTemplate = `{
                 "token": {
                     "type": "string",
                     "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                }
+            }
+        },
+        "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.UpdateDeviceRequest": {
+            "description": "Update device request",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         }
