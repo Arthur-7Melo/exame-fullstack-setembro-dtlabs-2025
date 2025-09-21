@@ -25,6 +25,17 @@ func (e *BusinessError) Message() string {
     return e.Msg
 }
 
+func NewValidationError(msg string) *BusinessError {
+    return &BusinessError{Msg: msg, Code: http.StatusBadRequest}
+}
+
+func GetStatusCode(err error) int {
+    if bizErr, ok := err.(*BusinessError); ok {
+        return bizErr.Code
+    }
+    return http.StatusInternalServerError
+}
+
 var (
     // Auth errors
     ErrUserAlreadyExists  = &BusinessError{Msg: "user already exists", Code: http.StatusConflict}
@@ -41,4 +52,10 @@ var (
     ErrInvalidToken       = &BusinessError{Msg: "invalid token", Code: http.StatusUnauthorized}
     ErrTokenExpired       = &BusinessError{Msg: "token expired", Code: http.StatusUnauthorized}
     ErrInvalidSigningMethod = &BusinessError{Msg: "invalid signing method", Code: http.StatusUnauthorized}
+
+    // Device errors
+    ErrDeviceNotFound      = &BusinessError{Msg: "device not found", Code: http.StatusNotFound}
+    ErrDeviceAlreadyExists = &BusinessError{Msg: "device with this serial number already exists", Code: http.StatusConflict}
+    ErrForbidden           = &BusinessError{Msg: "access to this resource is forbidden", Code: http.StatusForbidden}
+    ErrDatabaseError       = &BusinessError{Msg: "database error", Code: http.StatusInternalServerError}
 )
