@@ -421,6 +421,157 @@
                     }
                 }
             }
+        },
+        "/v1/devices/{id}/heartbeats": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get heartbeats for a specific device within a time range",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "heartbeats"
+                ],
+                "summary": "Get device heartbeats",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "24 hours ago",
+                        "description": "Start time (RFC3339 format)",
+                        "name": "start",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "now",
+                        "description": "End time (RFC3339 format)",
+                        "name": "end",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of device heartbeats",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.HeartbeatResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid device ID or time format",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Device not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/devices/{id}/heartbeats/latest": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get the most recent heartbeat for a specific device",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "heartbeats"
+                ],
+                "summary": "Get latest device heartbeat",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Latest device heartbeat",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.HeartbeatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid device ID",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Device or heartbeat not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -578,6 +729,52 @@
                 "message": {
                     "type": "string",
                     "example": "Invalid credentials"
+                }
+            }
+        },
+        "github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.HeartbeatResponse": {
+            "description": "Heartbeat response with telemetry data and metadata",
+            "type": "object",
+            "properties": {
+                "boot_time": {
+                    "type": "string",
+                    "example": "2023-01-01T00:00:00Z"
+                },
+                "connectivity": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "cpu": {
+                    "type": "number",
+                    "example": 45.67
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "device_id": {
+                    "type": "string",
+                    "example": "f8aac3d7-b2ac-43e8-94d5-bbee59dd4ac9"
+                },
+                "disk_free": {
+                    "type": "number",
+                    "example": 23.45
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "latency": {
+                    "type": "integer",
+                    "example": 150
+                },
+                "ram": {
+                    "type": "number",
+                    "example": 67.89
+                },
+                "temperature": {
+                    "type": "number",
+                    "example": 35.67
                 }
             }
         },

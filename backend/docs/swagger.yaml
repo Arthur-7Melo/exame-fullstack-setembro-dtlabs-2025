@@ -115,6 +115,40 @@ definitions:
         example: Invalid credentials
         type: string
     type: object
+  github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.HeartbeatResponse:
+    description: Heartbeat response with telemetry data and metadata
+    properties:
+      boot_time:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      connectivity:
+        example: 1
+        type: integer
+      cpu:
+        example: 45.67
+        type: number
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      device_id:
+        example: f8aac3d7-b2ac-43e8-94d5-bbee59dd4ac9
+        type: string
+      disk_free:
+        example: 23.45
+        type: number
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      latency:
+        example: 150
+        type: integer
+      ram:
+        example: 67.89
+        type: number
+      temperature:
+        example: 35.67
+        type: number
+    type: object
   github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse:
     description: Example for a 500 Internal Server Error response
     properties:
@@ -436,6 +470,104 @@ paths:
       summary: Update a device
       tags:
       - devices
+  /v1/devices/{id}/heartbeats:
+    get:
+      consumes:
+      - application/json
+      description: Get heartbeats for a specific device within a time range
+      parameters:
+      - description: Device ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 24 hours ago
+        description: Start time (RFC3339 format)
+        in: query
+        name: start
+        type: string
+      - default: now
+        description: End time (RFC3339 format)
+        in: query
+        name: end
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of device heartbeats
+          schema:
+            items:
+              $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.HeartbeatResponse'
+            type: array
+        "400":
+          description: Invalid device ID or time format
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse'
+        "404":
+          description: Device not found
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get device heartbeats
+      tags:
+      - heartbeats
+  /v1/devices/{id}/heartbeats/latest:
+    get:
+      consumes:
+      - application/json
+      description: Get the most recent heartbeat for a specific device
+      parameters:
+      - description: Device ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Latest device heartbeat
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.HeartbeatResponse'
+        "400":
+          description: Invalid device ID
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.BadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.ForbiddenErrorResponse'
+        "404":
+          description: Device or heartbeat not found
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.DetailedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_Arthur-7Melo_exame-fullstack-setembro-dtlabs-2025_internal_dto.InternalServerErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get latest device heartbeat
+      tags:
+      - heartbeats
 schemes:
 - http
 - https

@@ -19,6 +19,23 @@ func NewHeartbeatHandler(heartbeatService services.HeartbeatService) *HeartbeatH
     return &HeartbeatHandler{heartbeatService: heartbeatService}
 }
 
+// GetDeviceHeartbeats godoc
+// @Summary Get device heartbeats
+// @Description Get heartbeats for a specific device within a time range
+// @Tags heartbeats
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Device ID"
+// @Param start query string false "Start time (RFC3339 format)" default(24 hours ago)
+// @Param end query string false "End time (RFC3339 format)" default(now)
+// @Success 200 {array} dto.HeartbeatResponse "List of device heartbeats"
+// @Failure 400 {object} dto.BadRequestErrorResponse "Invalid device ID or time format"
+// @Failure 401 {object} dto.DetailedErrorResponse "Unauthorized"
+// @Failure 403 {object} dto.ForbiddenErrorResponse "Forbidden"
+// @Failure 404 {object} dto.DetailedErrorResponse "Device not found"
+// @Failure 500 {object} dto.InternalServerErrorResponse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /v1/devices/{id}/heartbeats [get]
 func (h *HeartbeatHandler) GetDeviceHeartbeats(c *gin.Context) {
     userID, exists := c.Get("userID")
     if !exists {
@@ -95,6 +112,21 @@ func (h *HeartbeatHandler) GetDeviceHeartbeats(c *gin.Context) {
     c.JSON(http.StatusOK, heartbeats)
 }
 
+// GetLatestDeviceHeartbeat godoc
+// @Summary Get latest device heartbeat
+// @Description Get the most recent heartbeat for a specific device
+// @Tags heartbeats
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Device ID"
+// @Success 200 {object} dto.HeartbeatResponse "Latest device heartbeat"
+// @Failure 400 {object} dto.BadRequestErrorResponse "Invalid device ID"
+// @Failure 401 {object} dto.DetailedErrorResponse "Unauthorized"
+// @Failure 403 {object} dto.ForbiddenErrorResponse "Forbidden"
+// @Failure 404 {object} dto.DetailedErrorResponse "Device or heartbeat not found"
+// @Failure 500 {object} dto.InternalServerErrorResponse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /v1/devices/{id}/heartbeats/latest [get]
 func (h *HeartbeatHandler) GetLatestDeviceHeartbeat(c *gin.Context) {
     userID, exists := c.Get("userID")
     if !exists {
