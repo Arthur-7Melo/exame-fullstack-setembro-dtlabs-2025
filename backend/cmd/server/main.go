@@ -2,9 +2,12 @@ package main
 
 import (
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/database"
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/handlers"
+	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/mq"
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/repository"
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/routers"
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/services"
@@ -60,14 +63,17 @@ func main() {
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
 	deviceRepo := repository.NewDeviceRepository(db)
+	heartbeatRepo := repository.NewHeartbeatRepository(db)
 	
 	// Initialize services
 	authService := services.NewAuthService(userRepo, jwtService)
 	deviceService := services.NewDeviceService(deviceRepo)
+	heartbeatService := services.NewHeartbeatService(heartbeatRepo, deviceRepo)
 	
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	deviceHandler := handlers.NewDeviceHandler(deviceService)
+	heartbeatHandler := handlers.NewHeartbeatHandler(heartbeatService)
 
 	router := gin.Default()
 
@@ -75,15 +81,44 @@ func main() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	routers.SetupAuthRouter(router, authHandler, jwtService)
-		routers.SetupDeviceRoutes(router, deviceHandler, jwtService)
+	routers.SetupDeviceRoutes(router, deviceHandler, jwtService)
+	routers.SetupHeartbeatRoutes(router, heartbeatHandler, jwtService)
+
+	amqpURL := os.Getenv("AMQP_URL")
+    if amqpURL == "" {
+      amqpURL = "amqp://guest:guest@rabbitmq:5672/"
+    }
+        
+   heartbeatConsumer, err := mq.NewHeartbeatConsumer(amqpURL, "heartbeats", heartbeatService)
+    if err != nil {
+			logger.Logger.Error("Failed to create heartbeat consumer", "error", err.Error())
+			os.Exit(1)
+    }
+    defer heartbeatConsumer.Close()
+        
+    if err := heartbeatConsumer.Start(); err != nil {
+			logger.Logger.Error("Failed to start heartbeat consumer", "error", err.Error())
+			os.Exit(1)
+    }
+	logger.Logger.Info("Heartbeat consumer started")
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 	
-	if err := router.Run(":" + port); err != nil {
-		logger.Logger.Error("Failed to start server", "error", err.Error())
-		os.Exit(1)
-	}
+	go func() {
+		logger.Logger.Info("Starting HTTP server", "port", port)
+		if err := router.Run(":" + port); err != nil {
+			logger.Logger.Error("Failed to start server", "error", err.Error())
+			os.Exit(1)
+		}
+	}()
+
+	logger.Logger.Info("Application started successfully. Press Ctrl+C to shutdown.")
+	<-quit
+	logger.Logger.Info("Shutting down application...")
 }
