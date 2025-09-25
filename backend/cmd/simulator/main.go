@@ -47,23 +47,35 @@ func main() {
     
     deviceIDs := os.Getenv("DEVICE_IDS")
     if deviceIDs == "" {
-        logger.Logger.Error("DEVICE_IDS environment variable is required")
-        os.Exit(1)
+        logger.Logger.Warn("DEVICE_IDS environment variable is not set. Simulator will start but won't send any heartbeats.")
+        deviceIDs = ""
     }
     
     var deviceUUIDs []uuid.UUID
-    for _, id := range strings.Split(deviceIDs, ",") {
-        deviceID, err := uuid.Parse(strings.TrimSpace(id))
-        if err != nil {
-            logger.Logger.Error("Invalid device ID", "id", id)
-            os.Exit(1)
+    if deviceIDs != "" {
+        for _, id := range strings.Split(deviceIDs, ",") {
+            deviceID, err := uuid.Parse(strings.TrimSpace(id))
+            if err != nil {
+                logger.Logger.Error("Invalid device ID", "id", id)
+                os.Exit(1)
+            }
+            deviceUUIDs = append(deviceUUIDs, deviceID)
         }
-        deviceUUIDs = append(deviceUUIDs, deviceID)
     }
     
     logger.Logger.Info("Starting heartbeat simulator", "device_count", len(deviceUUIDs))
+
+    if len(deviceUUIDs) == 0 {
+        logger.Logger.Warn("No devices configured. Simulator is running but won't send heartbeats.")
+    }
     
     for {
+        if len(deviceUUIDs) == 0 {
+            logger.Logger.Info("Waiting for devices to be configured...")
+            time.Sleep(1 * time.Minute)
+            continue
+        }
+        
         for _, deviceID := range deviceUUIDs {
             msg := dto.HeartbeatMessage{
                 DeviceID:     deviceID.String(),

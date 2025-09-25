@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +13,7 @@ import (
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/routers"
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/services"
 	logger "github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/utils/logger"
+	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/pkg/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
@@ -40,6 +42,9 @@ func main() {
 		logger.Logger.Warn(".env file not found", "warn", err.Error())
 	}
 
+	redisClient := redis.NewRedisClient()
+	logger.Logger.Info("Connected to Redis")
+
 	dbConfig := database.NewDBConfig()
 	db, err := database.NewPostgresConnection(dbConfig)
 	if err != nil {
@@ -64,32 +69,58 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	deviceRepo := repository.NewDeviceRepository(db)
 	heartbeatRepo := repository.NewHeartbeatRepository(db)
+	notificationRepo := repository.NewNotificationRepository(db)
 	
 	// Initialize services
 	authService := services.NewAuthService(userRepo, jwtService)
 	deviceService := services.NewDeviceService(deviceRepo)
 	heartbeatService := services.NewHeartbeatService(heartbeatRepo, deviceRepo)
+	notificationService := services.NewNotificationService(notificationRepo, deviceRepo, redisClient)
 	
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	deviceHandler := handlers.NewDeviceHandler(deviceService)
 	heartbeatHandler := handlers.NewHeartbeatHandler(heartbeatService)
+	notificationHandler := handlers.NewNotificationHandler(notificationService)
 
 	router := gin.Default()
 
 	url := ginSwagger.URL("/swagger/doc.json") 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
+	// Health check endpoint including Redis
+	router.GET("/health", func(c *gin.Context) {
+		ctx := context.Background()
+		if err := redisClient.Ping(ctx); err != nil {
+			c.JSON(503, gin.H{"status": "unhealthy", "redis": "disconnected"})
+			return
+		}
+
+		if err := db.Exec("SELECT 1").Error; err != nil {
+			c.JSON(503, gin.H{"status": "unhealthy", "database": "disconnected"})
+			return
+		}
+
+		c.JSON(200, gin.H{"status": "healthy", "redis": "connected", "database": "connected"})
+	})
+
 	routers.SetupAuthRouter(router, authHandler, jwtService)
 	routers.SetupDeviceRoutes(router, deviceHandler, jwtService)
 	routers.SetupHeartbeatRoutes(router, heartbeatHandler, jwtService)
+	routers.SetupNotificationRoutes(router, notificationHandler, jwtService)
 
 	amqpURL := os.Getenv("AMQP_URL")
     if amqpURL == "" {
       amqpURL = "amqp://guest:guest@rabbitmq:5672/"
     }
         
-   heartbeatConsumer, err := mq.NewHeartbeatConsumer(amqpURL, "heartbeats", heartbeatService)
+   heartbeatConsumer, err := mq.NewHeartbeatConsumer(
+		amqpURL,
+		"heartbeats",
+		heartbeatService,
+		notificationService,
+		deviceRepo,
+	)
     if err != nil {
 			logger.Logger.Error("Failed to create heartbeat consumer", "error", err.Error())
 			os.Exit(1)
