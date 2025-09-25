@@ -1,4 +1,3 @@
-// internal/services/device_service.go
 package services
 
 import (
