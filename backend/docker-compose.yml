@@ -39,6 +39,22 @@ services:
       retries: 10
       start_period: 30s 
 
+  redis:
+    image: redis:7-alpine
+    container_name: iotplatform_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - iotplatform_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
   app:
     build:
       context: .
@@ -57,10 +73,13 @@ services:
       - SSL_MODE=${SSL_MODE}
       - JWT_SECRET=${JWT_SECRET}
       - AMQP_URL=amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672/
+      - REDIS_URL=${REDIS_URL}
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - iotplatform_network
@@ -92,6 +111,7 @@ services:
 volumes:
   postgres_data:
   rabbitmq_data:
+  redis_data:
 
 networks:
   iotplatform_network:
