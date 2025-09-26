@@ -18,6 +18,19 @@ func NewNotificationHandler(notificationService services.NotificationService) *N
 	return &NotificationHandler{notificationService: notificationService}
 }
 
+// CreateNotification godoc
+// @Summary Create a notification rule
+// @Description Create a new notification rule for the authenticated user. Notifications will trigger in real-time when heartbeat conditions are met.
+// @Tags notifications
+// @Accept  json
+// @Produce  json
+// @Param request body dto.CreateNotificationRequest true "Notification rule configuration"
+// @Success 201 {object} dto.NotificationResponse "Notification rule created successfully"
+// @Failure 400 {object} dto.BadRequestErrorResponse "Invalid request body or validation error"
+// @Failure 401 {object} dto.DetailedErrorResponse "Unauthorized"
+// @Failure 500 {object} dto.InternalServerErrorResponse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /v1/notifications [post]
 func (h *NotificationHandler) CreateNotification(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -70,6 +83,17 @@ func (h *NotificationHandler) CreateNotification(c *gin.Context) {
 	c.JSON(http.StatusCreated, notification)
 }
 
+// GetNotifications godoc
+// @Summary Get user notification rules
+// @Description Get all notification rules configured by the authenticated user
+// @Tags notifications
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} dto.NotificationResponse "List of notification rules"
+// @Failure 401 {object} dto.DetailedErrorResponse "Unauthorized"
+// @Failure 500 {object} dto.InternalServerErrorResponse "Internal server error"
+// @Security ApiKeyAuth
+// @Router /v1/notifications [get]
 func (h *NotificationHandler) GetNotifications(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
