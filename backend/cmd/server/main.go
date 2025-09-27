@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/database"
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/handlers"
@@ -14,6 +15,7 @@ import (
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/services"
 	logger "github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/utils/logger"
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/pkg/redis"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
@@ -84,6 +86,15 @@ func main() {
 	notificationHandler := handlers.NewNotificationHandler(notificationService)
 
 	router := gin.Default()
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	url := ginSwagger.URL("/swagger/doc.json") 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
