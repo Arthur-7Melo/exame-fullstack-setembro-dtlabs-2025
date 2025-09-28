@@ -1,16 +1,36 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuthContext } from './contexts/authContext';
 import Login from './pages/Login';
+import Home from './pages/Home';
+import Devices from './pages/Devices';
+import { ThemeProvider } from './providers/ThemeProvider';
+import Layout from './components/navbar/Layout';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuthContext();
-  return user ? <>{children}</> : <Navigate to="/login" />;
+  return user ? <Layout>{children}</Layout> : <Navigate to="/login" />;
 };
 
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+       <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          } 
+        />
+         <Route 
+          path="/devices" 
+          element={
+            <ProtectedRoute>
+              <Devices />
+            </ProtectedRoute>
+          } 
+        />
     </Routes>
   );
 };
@@ -18,11 +38,13 @@ const AppRoutes: React.FC = () => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <Router>
-        <div className="App">
-          <AppRoutes />
-        </div>
-      </Router>
+      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+        <Router>
+          <div className="App">
+            <AppRoutes />
+          </div>
+        </Router>
+      </ThemeProvider>
     </AuthProvider>
   );
 };
