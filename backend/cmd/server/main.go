@@ -14,6 +14,7 @@ import (
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/routers"
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/services"
 	logger "github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/utils/logger"
+	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/internal/websocket"
 	"github.com/Arthur-7Melo/exame-fullstack-setembro-dtlabs-2025/pkg/redis"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -46,6 +47,10 @@ func main() {
 
 	redisClient := redis.NewRedisClient()
 	logger.Logger.Info("Connected to Redis")
+
+	wsHub := websocket.NewHub(redisClient)
+	go wsHub.Run()
+	defer wsHub.Stop()
 
 	dbConfig := database.NewDBConfig()
 	db, err := database.NewPostgresConnection(dbConfig)
@@ -114,6 +119,9 @@ func main() {
 
 		c.JSON(200, gin.H{"status": "healthy", "redis": "connected", "database": "connected"})
 	})
+
+	// WebSocket route
+	router.GET("/ws/notifications", wsHub.HandleWebSocket)
 
 	routers.SetupAuthRouter(router, authHandler, jwtService)
 	routers.SetupDeviceRoutes(router, deviceHandler, jwtService)

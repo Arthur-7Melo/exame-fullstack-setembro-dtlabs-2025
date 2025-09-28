@@ -42,3 +42,7 @@ func (c *Client) Publish(ctx context.Context, channel string, message interface{
 func (c *Client) Subscribe(ctx context.Context, channels ...string) *redis.PubSub {
 	return c.Client.Subscribe(ctx, channels...)
 }
+
+func (c *Client) PSubscribe(ctx context.Context, patterns ...string) *redis.PubSub {
+	return c.Client.PSubscribe(ctx, patterns...)
+}
