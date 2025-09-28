@@ -19,3 +19,39 @@ export interface JwtPayload {
   iss?: string;
 }
 
+export interface Device {
+  uuid: string;
+  name: string;
+  location: string;
+  sn: string;
+  description: string;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+  status: 'online' | 'offline' | 'warning';
+  lastHeartbeat?: string;
+  cpuUsage: number;
+  ramUsage: number;
+  temperature: number;
+}
+
+export interface HeartbeatData {
+  id: string;
+  device_id: string;
+  cpu: number;
+  ram: number;
+  disk_free: number;
+  temperature: number;
+  latency: number;
+  connectivity: number;
+  boot_time: string;
+  created_at: string;
+}
+
+export interface DeviceFilters {
+  status?: string;
+  dateRange?: {
+    start: Date;
+    end: Date;
+  };
+}
