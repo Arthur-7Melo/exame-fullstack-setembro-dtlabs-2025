@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Devices from './pages/Devices';
 import { ThemeProvider } from './providers/ThemeProvider';
 import Layout from './components/navbar/Layout';
+import Notifications from './pages/Notifications';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuthContext();
@@ -31,6 +32,14 @@ const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           } 
         />
+        <Route
+          path='/notifications'
+          element={
+            <ProtectedRoute>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />    
     </Routes>
   );
 };

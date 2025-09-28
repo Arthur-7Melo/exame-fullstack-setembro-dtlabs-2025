@@ -55,3 +55,29 @@ export interface DeviceFilters {
     end: Date;
   };
 }
+
+export interface NotificationCondition {
+  parameter: 'cpu' | 'ram' | 'disk_free' | 'temperature' | 'latency' | 'connectivity';
+  operator: '>' | '<' | '>=' | '<=' | '==' | '!=';
+  value: number;
+}
+
+export interface CreateNotificationRequest {
+  name: string;
+  description?: string;
+  enabled: boolean;
+  conditions: NotificationCondition[];
+  device_ids: string[];
+}
+
+export interface NotificationResponse {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  enabled: boolean;
+  conditions: NotificationCondition[];
+  device_ids: string[];
+  created_at: string;
+  updated_at: string;
+}
