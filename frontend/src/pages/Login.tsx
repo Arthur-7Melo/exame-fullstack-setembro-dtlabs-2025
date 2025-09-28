@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../contexts/authContext';
 import { getErrorMessage } from '../utils/errorHandler';
 import NetworkSVG from '../assets/network.svg';
@@ -21,6 +22,7 @@ const Login: React.FC = () => {
   const { login, signup } = useAuthContext();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const Navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +35,9 @@ const Login: React.FC = () => {
       } else {
         await signup(email, password);
       }
+      Navigate('/', {
+        replace: true
+      })
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       setError(errorMessage);
@@ -60,12 +65,12 @@ const Login: React.FC = () => {
       <Card className="w-full max-w-md md:w-1/2 lg:w-2/5 order-2 md:order-2">
         <CardHeader className="pb-4">
           <CardTitle className="text-2xl">
-            {isLogin ? 'Login to your account' : 'Create an account'}
+            {isLogin ? 'Fazer Login' : 'Criar uma conta'}
           </CardTitle>
           <CardDescription>
             {isLogin 
-              ? 'Enter your email below to login to your account' 
-              : 'Enter your email below to create your account'
+              ? 'Digite seu e-mail abaixo para entrar na sua conta' 
+              : 'Digite seu e-mail abaixo para criar sua conta'
             }
           </CardDescription>
         </CardHeader>
@@ -123,7 +128,7 @@ const Login: React.FC = () => {
               disabled={loading}
               className="h-9 cursor-pointer"
             >
-              {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
+              {isLogin ? "Não possui uma Conta? Criar conta" : "Já possui uma conta? Login"}
             </Button>
           </CardFooter>
         </form>
