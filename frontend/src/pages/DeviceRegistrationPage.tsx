@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { deviceService } from '@/services/deviceService';
 import type { Device, CreateDeviceData, UpdateDeviceData } from '@/types/index';
+import { useAuthContext } from '@/contexts/authContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,8 +9,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Pencil, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '@/utils/errorHandler';
 
 const DeviceRegistrationPage: React.FC = () => {
+  const { user } = useAuthContext();
+  
   const [devices, setDevices] = useState<Device[]>([]);
   const [filteredDevices, setFilteredDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(false);
@@ -17,6 +21,8 @@ const DeviceRegistrationPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [currentDevice, setCurrentDevice] = useState<Device | null>(null);
+  const [errors, setErrors] = useState<{sn?: string}>({});
+  const [formError, setFormError] = useState('');
 
   const [formData, setFormData] = useState<CreateDeviceData>({
     name: '',
@@ -25,6 +31,10 @@ const DeviceRegistrationPage: React.FC = () => {
     description: ''
   });
 
+  const validateSerialNumber = (sn: string): boolean => {
+    return /^\d{12}$/.test(sn);
+  };
+
   const loadDevices = async () => {
     try {
       setLoading(true);
@@ -32,15 +42,18 @@ const DeviceRegistrationPage: React.FC = () => {
       setDevices(deviceList);
       setFilteredDevices(deviceList);
     } catch (error) {
-      toast.error('Falha ao carregar dispositivos');
+      const errorMessage = getErrorMessage(error);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadDevices();
-  }, []);
+    if (user) {
+      loadDevices();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!searchTerm) {
@@ -58,6 +71,13 @@ const DeviceRegistrationPage: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+
+    if (name === 'sn' && errors.sn) {
+      setErrors(prev => ({ ...prev, sn: undefined }));
+    }
+    if (formError) {
+      setFormError('');
+    }
   };
 
   const resetForm = () => {
@@ -69,13 +89,24 @@ const DeviceRegistrationPage: React.FC = () => {
     });
     setIsEditing(false);
     setCurrentDevice(null);
+    setErrors({});
+    setFormError(''); 
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    setErrors({});
+    setFormError('');
+
     if (!formData.name || !formData.location || !formData.sn) {
-      toast.error('Nome, localização e número de série são obrigatórios');
+      setFormError('Nome, localização e número de série são obrigatórios');
+      return;
+    }
+
+    if (!validateSerialNumber(formData.sn)) {
+      setErrors({ sn: 'Número de série deve conter exatamente 12 números' });
+      setFormError('Número de série deve conter exatamente 12 números');
       return;
     }
 
@@ -99,7 +130,8 @@ const DeviceRegistrationPage: React.FC = () => {
       
       resetForm();
     } catch (error) {
-      toast.error('Falha ao salvar dispositivo');
+      const errorMessage = getErrorMessage(error);
+      setFormError(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -114,7 +146,9 @@ const DeviceRegistrationPage: React.FC = () => {
     });
     setIsEditing(true);
     setCurrentDevice(device);
-  };
+    setErrors({});
+    setFormError('');
+    };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Tem certeza que deseja excluir este dispositivo?')) {
@@ -126,13 +160,24 @@ const DeviceRegistrationPage: React.FC = () => {
       setDevices(devices.filter(device => device.uuid !== id));
       toast.success('Dispositivo excluído com sucesso');
     } catch (error) {
-      toast.error('Falha ao excluir dispositivo');
+      const errorMessage = getErrorMessage(error);
+      toast.error(errorMessage);
     }
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
+
+  if (!user) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">Verificando autenticação...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -168,6 +213,12 @@ const DeviceRegistrationPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {formError && (
+                <div className="text-red-700 text-md text-center py-2">
+                  {formError}
+                </div>
+              )}
+
               <div className="space-y-2">
                 <label htmlFor="name" className="text-sm font-medium">
                   Nome *
@@ -203,12 +254,16 @@ const DeviceRegistrationPage: React.FC = () => {
                 <Input
                   id="sn"
                   name="sn"
-                  placeholder="Número de série"
+                  placeholder="Número de série (12 dígitos)"
                   value={formData.sn}
                   onChange={handleInputChange}
                   required
                   disabled={isEditing}
+                  className={errors.sn ? 'border-red-500' : ''}
                 />
+                {errors.sn && (
+                  <p className="text-xs text-red-500">{errors.sn}</p>
+                )}
                 {isEditing && (
                   <p className="text-xs text-gray-500">
                     Número de série não pode ser alterado
