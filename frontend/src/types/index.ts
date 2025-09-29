@@ -35,6 +35,19 @@ export interface Device {
   temperature: number;
 }
 
+export interface CreateDeviceData {
+  name: string;
+  location: string;
+  sn: string;
+  description: string;
+}
+
+export interface UpdateDeviceData {
+  name: string;
+  location: string;
+  description: string;
+}
+
 export interface HeartbeatData {
   id: string;
   device_id: string;

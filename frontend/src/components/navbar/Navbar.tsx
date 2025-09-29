@@ -44,7 +44,7 @@ const Navbar = () => {
     { path: '/', icon: Home, label: 'Home' },
     { path: '/devices', icon: Smartphone, label: 'Devices' },
     { path: '/notifications', icon: Bell, label: 'Notificações' },
-    { path: '/register-devices', icon: PlusCircle, label: 'Registrar Dispositivos' },
+    { path: '/register', icon: PlusCircle, label: 'Registrar Dispositivos' },
   ];
 
   return (

@@ -6,6 +6,7 @@ import Devices from './pages/Devices';
 import { ThemeProvider } from './providers/ThemeProvider';
 import Layout from './components/navbar/Layout';
 import Notifications from './pages/Notifications';
+import DeviceRegistrationPage from './pages/DeviceRegistrationPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuthContext();
@@ -39,7 +40,15 @@ const AppRoutes: React.FC = () => {
               <Notifications />
             </ProtectedRoute>
           }
-        />    
+        />
+         <Route 
+          path="/register" 
+          element={
+            <ProtectedRoute>
+              <DeviceRegistrationPage />
+            </ProtectedRoute>
+          } 
+        />   
     </Routes>
   );
 };
