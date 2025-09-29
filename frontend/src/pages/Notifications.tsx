@@ -126,7 +126,7 @@ const Notifications = () => {
         </TabsContent>
 
         <TabsContent value="realtime">
-          <RealTimeNotifications getParameterIcon={getParameterIcon} />
+          <RealTimeNotifications getParameterIcon={getParameterIcon} devices={devices}/>
         </TabsContent>
       </Tabs>
     </div>
